@@ -1,303 +1,347 @@
 const menuBtn = document.getElementById("menuBtn");
 const sidebar = document.getElementById("sidebar");
 
-/* MENU */
-if(menuBtn){
-
-  menuBtn.addEventListener("click", () => {
-
+menuBtn.addEventListener("click", () => {
     sidebar.classList.toggle("active");
-
-  });
-
-}
-
-/* =========================
-   CONFIG
-========================= */
+});
 
 const colors = ["green", "red", "yellow", "blue"];
 
 let gameSequence = [];
 let playerSequence = [];
+
 let score = 0;
+
 let canClick = false;
 let gameStarted = false;
 
-const scoreEl = document.getElementById("score");
-const startBtn = document.getElementById("startBtn");
+let currentPlayer = "";
+
 const buttons = document.querySelectorAll(".btn");
 
-/* =========================
-   START GAME
-========================= */
+const scoreEl = document.getElementById("score");
 
-if(startBtn){
+const startBtn = document.getElementById("startBtn");
 
-  startBtn.addEventListener("click", () => {
+const restartGame = document.getElementById("restartGame");
+
+const playerNameInput =
+document.getElementById("playerName");
+
+const rankingBody =
+document.getElementById("rankingBody");
+
+const resetRanking =
+document.getElementById("resetRanking");
+
+/* =========================================
+   START
+========================================= */
+
+startBtn.addEventListener("click", () => {
 
     if(gameStarted) return;
+
+    const playerName =
+    playerNameInput.value.trim();
+
+    if(playerName.length < 2){
+
+        alert("Digite um nome válido");
+
+        return;
+    }
+
+    currentPlayer = playerName;
+
+    startGame();
+});
+
+/* =========================================
+   NOVA PARTIDA
+========================================= */
+
+restartGame.addEventListener("click", () => {
+
+    gameStarted = false;
+
+    gameSequence = [];
+    playerSequence = [];
+
+    score = 0;
+
+    scoreEl.textContent = score;
+
+    startBtn.textContent = "▶ INICIAR";
+});
+
+/* =========================================
+   LIMPAR RANKING
+========================================= */
+
+resetRanking.addEventListener("click", () => {
+
+    rankingBody.innerHTML = "";
+});
+
+/* =========================================
+   START GAME
+========================================= */
+
+function startGame(){
 
     gameStarted = true;
 
     gameSequence = [];
     playerSequence = [];
+
     score = 0;
 
-    if(scoreEl){
-      scoreEl.textContent = score;
-    }
+    scoreEl.textContent = score;
 
-    startBtn.innerText = "JOGANDO...";
+    startBtn.textContent = "JOGANDO...";
 
     setTimeout(() => {
 
-      nextRound();
+        nextRound();
 
     }, 700);
-
-  });
-
 }
 
-/* =========================
+/* =========================================
    SOM
-========================= */
+========================================= */
 
 function playSound(color){
 
-  const sounds = {
+    const sounds = {
 
-    green:
-    "https://s3.amazonaws.com/freecodecamp/simonSound1.mp3",
+        green:
+        "https://s3.amazonaws.com/freecodecamp/simonSound1.mp3",
 
-    red:
-    "https://s3.amazonaws.com/freecodecamp/simonSound2.mp3",
+        red:
+        "https://s3.amazonaws.com/freecodecamp/simonSound2.mp3",
 
-    yellow:
-    "https://s3.amazonaws.com/freecodecamp/simonSound3.mp3",
+        yellow:
+        "https://s3.amazonaws.com/freecodecamp/simonSound3.mp3",
 
-    blue:
-    "https://s3.amazonaws.com/freecodecamp/simonSound4.mp3"
-  };
+        blue:
+        "https://s3.amazonaws.com/freecodecamp/simonSound4.mp3"
+    };
 
-  const audio = new Audio(sounds[color]);
+    const audio = new Audio(sounds[color]);
 
-  audio.volume = 0.35;
+    audio.volume = 0.35;
 
-  audio.play();
+    audio.play();
 }
 
-/* =========================
+/* =========================================
    FLASH
-========================= */
+========================================= */
 
 function flash(color){
 
-  const btn =
-  document.querySelector(`.${color}`);
+    const btn =
+    document.querySelector(`.${color}`);
 
-  if(!btn) return;
+    btn.classList.add("active");
 
-  btn.classList.add("active");
+    playSound(color);
 
-  playSound(color);
+    setTimeout(() => {
 
-  setTimeout(() => {
+        btn.classList.remove("active");
 
-    btn.classList.remove("active");
-
-  }, 550);
+    }, 400);
 }
 
-/* =========================
+/* =========================================
    NEXT ROUND
-========================= */
+========================================= */
 
 function nextRound(){
 
-  playerSequence = [];
-
-  canClick = false;
-
-  const randomColor =
-  colors[Math.floor(Math.random() * colors.length)];
-
-  gameSequence.push(randomColor);
-
-  score = gameSequence.length - 1;
-
-  if(scoreEl){
-    scoreEl.textContent = score;
-  }
-
-  showSequence();
-}
-
-/* =========================
-   SHOW SEQUENCE
-========================= */
-
-function showSequence(){
-
-  let i = 0;
-
-  const interval = setInterval(() => {
-
-    flash(gameSequence[i]);
-
-    i++;
-
-    if(i >= gameSequence.length){
-
-      clearInterval(interval);
-
-      setTimeout(() => {
-
-        canClick = true;
-
-      }, 700);
-    }
-
-  }, 850);
-}
-
-/* =========================
-   PLAYER CLICK
-========================= */
-
-buttons.forEach(btn => {
-
-  btn.addEventListener("click", () => {
-
-    if(!canClick) return;
-
-    const color = btn.dataset.color;
-
-    playerSequence.push(color);
-
-    flash(color);
-
-    checkMove(playerSequence.length - 1);
-  });
-
-});
-
-/* =========================
-   CHECK
-========================= */
-
-function checkMove(index){
-
-  if(playerSequence[index] !== gameSequence[index]){
-
-    gameOver();
-
-    return;
-  }
-
-  if(playerSequence.length === gameSequence.length){
+    playerSequence = [];
 
     canClick = false;
 
-    setTimeout(() => {
+    const randomColor =
+    colors[Math.floor(Math.random() * colors.length)];
 
-      nextRound();
+    gameSequence.push(randomColor);
 
-    }, 1000);
-  }
+    score = gameSequence.length - 1;
+
+    scoreEl.textContent = score;
+
+    showSequence();
 }
 
-/* =========================
+/* =========================================
+   SHOW SEQUENCE
+========================================= */
+
+function showSequence(){
+
+    let i = 0;
+
+    const interval = setInterval(() => {
+
+        flash(gameSequence[i]);
+
+        i++;
+
+        if(i >= gameSequence.length){
+
+            clearInterval(interval);
+
+            setTimeout(() => {
+
+                canClick = true;
+
+            }, 600);
+        }
+
+    }, 800);
+}
+
+/* =========================================
+   PLAYER CLICK
+========================================= */
+
+buttons.forEach(btn => {
+
+    btn.addEventListener("click", () => {
+
+        if(!canClick) return;
+
+        const color = btn.dataset.color;
+
+        playerSequence.push(color);
+
+        flash(color);
+
+        checkMove(playerSequence.length - 1);
+    });
+
+});
+
+/* =========================================
+   CHECK
+========================================= */
+
+function checkMove(index){
+
+    if(playerSequence[index] !== gameSequence[index]){
+
+        gameOver();
+
+        return;
+    }
+
+    if(playerSequence.length === gameSequence.length){
+
+        canClick = false;
+
+        setTimeout(() => {
+
+            nextRound();
+
+        }, 1000);
+    }
+}
+
+/* =========================================
    GAME OVER
-========================= */
+========================================= */
 
 function gameOver(){
 
-  canClick = false;
-  gameStarted = false;
+    canClick = false;
 
-  createLoseScreen();
+    gameStarted = false;
 
-  gameSequence = [];
-  playerSequence = [];
+    addToRanking(currentPlayer, score);
 
-  if(startBtn){
-    startBtn.innerText = "JOGAR NOVAMENTE";
-  }
+    createLoseScreen();
+
+    gameSequence = [];
+    playerSequence = [];
+
+    startBtn.textContent = "▶ INICIAR";
 }
 
-/* =========================
-   TELA DE DERROTA
-========================= */
+/* =========================================
+   RANKING
+========================================= */
+
+function addToRanking(name, points){
+
+    const tr =
+    document.createElement("tr");
+
+    tr.innerHTML = `
+
+        <td>${name}</td>
+        <td>${points}</td>
+
+    `;
+
+    rankingBody.prepend(tr);
+}
+
+/* =========================================
+   LOSE SCREEN
+========================================= */
 
 function createLoseScreen(){
 
-  const oldScreen =
-  document.querySelector(".lose-screen");
+    const old =
+    document.querySelector(".lose-screen");
 
-  if(oldScreen){
-    oldScreen.remove();
-  }
-
-  const loseScreen =
-  document.createElement("div");
-
-  loseScreen.classList.add("lose-screen");
-
-  loseScreen.innerHTML = `
-
-    <div class="lose-card">
-
-      <h2>Fim de jogo</h2>
-
-      <p class="lose-text">
-        Você alcançou
-      </p>
-
-      <div class="final-score">
-        ${score}
-      </div>
-
-      <p class="lose-sub">
-        pontos
-      </p>
-
-      <button class="restart-btn">
-        Jogar novamente
-      </button>
-
-    </div>
-
-  `;
-
-  document.body.appendChild(loseScreen);
-
-  const restartBtn =
-  loseScreen.querySelector(".restart-btn");
-
-  restartBtn.addEventListener("click", () => {
-
-    loseScreen.remove();
-
-    score = 0;
-
-    if(scoreEl){
-      scoreEl.textContent = score;
+    if(old){
+        old.remove();
     }
 
-    if(startBtn){
-      startBtn.innerText = "JOGANDO...";
-    }
+    const loseScreen =
+    document.createElement("div");
 
-    gameStarted = true;
+    loseScreen.classList.add("lose-screen");
 
-    setTimeout(() => {
+    loseScreen.innerHTML = `
 
-      nextRound();
+        <div class="lose-card">
 
-    }, 600);
+            <h2>Fim de jogo</h2>
 
-  });
+            <p>Você alcançou</p>
 
+            <div class="final-score">
+                ${score}
+            </div>
+
+            <p>pontos</p>
+
+            <button class="restart-btn">
+                Jogar novamente
+            </button>
+
+        </div>
+
+    `;
+
+    document.body.appendChild(loseScreen);
+
+    const restartBtn =
+    loseScreen.querySelector(".restart-btn");
+
+    restartBtn.addEventListener("click", () => {
+
+        loseScreen.remove();
+
+        score = 0;
+
+        scoreEl.textContent = score;
+    });
 }
